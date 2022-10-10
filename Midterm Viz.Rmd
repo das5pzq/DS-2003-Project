@@ -1,0 +1,48 @@
+---
+title: "Midterm DS 2003"
+author: "Declan Young"
+date: "9/29/2022"
+output: 
+  html_document:
+    theme: lumen
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning=FALSE, include=FALSE}
+# import packages
+library(tidyverse)
+```
+
+```{r, include=FALSE}
+# Read in income data
+setwd("C:/Users/dryou/Documents/DS 2003")
+stud_alc <- read.csv("./student-mat.csv")
+```
+
+## **Question:** Does the level of weekend alcohol consumption in students relate to their final grades?
+
+### **Hypothesis:** We believe that grades will decrease in students with higher weekend alcohol consumption levels.
+
+```{r}
+
+#Wrangling data to make a tibble with the average grade percent for each level of alcohol consumption
+stud_alc_summarized <- stud_alc %>% mutate(G1 = (G1/20)*100) %>% group_by(as.factor(Walc)) %>% summarise(mean = round(mean(G1), 2), sd = sd(G1)) %>% rename('Weekend_Alcohol_Consumption' = 'as.factor(Walc)') %>% mutate(pct = '%') %>% unite(bar_label, c(mean, pct), sep = '', remove = FALSE)
+stud_alc_summarized
+
+#Creating the visualization using ggplot
+ggplot(stud_alc_summarized, aes(x = Weekend_Alcohol_Consumption, y = mean, fill = 'pink')) + geom_bar(stat = 'identity', position = 'dodge') + theme_classic() + labs(title = "Average First Period Grade by Weekend Alcohol Consumption", caption = "Error bars represent +/-1 standard deviation from the average") + xlab("Weekend Alcohol Consumption") + ylab("First Period Grade (%)") +
+  geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=.2,
+                 position=position_dodge(.9)) + theme(legend.position = 'none') +geom_text(aes(label = bar_label), vjust = 10, colour = "black")
+```
+
+### **Findings:** 
+From the graph, we see that the grades of students worsen as alcohol consumption increases, especially as students cross a threshold from the 1-3 range to the 4-5 range. However, we cannot say that alcohol consumption causes grades to fall for two major reasons. First, a confounding variable could exist that causes both variables to vary with each other. For instance, perhaps course for older students have typically have lower grades across the class, and these students only drink more because they have better access to alcohol as legal students. Secondly, we would not be able to know which way the relationship between the two variables, so we cannot assume causality. It would be plausible for students who receive worse grades to turn to alcohol as a way to drown their sorrows away.
+
+Additionally, although a five percent difference would be significant for many students (although, these students would average F's using UVa's grading scale), we cannot say there is a significant difference between these grades. We did not perform an statistical tests such as a ANOVA test to check whether the difference should be attributed to chance instead. Looking at the error bars (1 standard deviation from the averages in each direction or ~68% of the sample assuming normality), there are many students who seldom drink alcohol and still score below the average of those who drink alcohol heavily and many students who drink large amounts of alcohol and perform better in the classroom than the average of those students who drink small amounts.
+
+Altogether, although we see a trend in the relationship between alcohol consumption and first period grade, it appears to follow more of a piece wise pattern than a linear or exponential pattern, and we cannot make any definitive conclusions.
+
