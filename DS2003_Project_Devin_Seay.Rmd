@@ -14,25 +14,33 @@ library(tidyverse)
 
 ```{r cars}
 library(corrr)
-install.packages("corrplot")
 library(corrplot)
 Grades <- read_csv("D:/DS_2003/DS-2003/student-mat.csv")
 view(Grades)
 Grades[,c(1,2,4,5,6,9,10,11,12,16,17,18,19,20,21,22,23)] <- lapply(Grades[,c(1,2,4,5,6,9,10,11,12,16,17,18,19,20,21,22,23)], as.factor)
 str(Grades)
 
+drops <- c("reason","Fjob","Mjob","Fedu","Medu","address","reason","guardian","school","paid")
+Grades = Grades[ , !(names(Grades) %in% drops)]
 Grades[] <- lapply(Grades, as.integer)
+str(Grades)
+colnames(Grades) <- c("Sex","Age","Family Size","Parent Status","Travel Time","Study Time","Past Failed Classes","School Education Support","Family Education Support","Extra-Curs","Attended Nursery","Higher Ed","Internet","Romantic","Family Relationship","Free Time","Going Out","Workday Alc Consumption","Weekend Alc Consumption","Health","Absences","G1","G2","G3")
 view(Grades)
-Grades_cor <- cor(Grades[1:30], Grades[31:33])
-Grades_cor <- Grades_cor[order(Grades_cor[1:30]),]
+Grades_cor <- cor(Grades[1:21], Grades[22:24])
+Grades_cor <- Grades_cor[order(Grades_cor[1:21]),]
 Grades_cor <- as.data.frame(Grades_cor)
 Grades_cor["rownames"] <- rownames(Grades_cor)
-Grades_cor
+view(Grades_cor)
+Grades_cor <- Grades_cor %>% 
+  mutate(interval  = case_when(G3 < 0 ~ 'below', G3 >= 0 ~ 'above'))
+Grades_cor <- Grades_cor %>%
+  arrange(desc(G3))
+view(Grades_cor)
 Grades_cor %>%
-  ggplot(aes(x = rownames, y = G1)) + 
-  geom_bar(size =4, stat = "identity") +
-  ylab("Correlation with G1") +
+  ggplot(aes(x = reorder(rownames,G3), y = G3, fill = interval)) + 
+  geom_bar(stat = "identity") +
+  ylab("r Correlation value with final grade") +
   xlab("Variable") +
-  theme(text = element_text(size=10), axis.text.x = element_text(angle=90, hjust=1))
+  theme(text = element_text(size=9), axis.text.x = element_text(angle=50,hjust=1),legend.position="none",axis.line = element_line(colour = "black"),panel.background = element_rect(fill = "white"))
 
 ```
