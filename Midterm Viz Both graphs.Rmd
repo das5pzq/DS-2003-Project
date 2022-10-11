@@ -1,7 +1,7 @@
 ---
 title: "Midterm DS 2003"
-author: "Declan Young"
-date: "9/29/2022"
+author: "Declan Young, Devin Seay, Saif Karim"
+date: "10/11/2022"
 output: 
   html_document:
     theme: lumen
@@ -19,8 +19,8 @@ library(tidyverse)
 
 ```{r, include=FALSE}
 # Read in income data
-setwd("C:/Users/dryou/Documents/DS 2003")
-stud_alc <- read.csv("./student-mat.csv")
+setwd("D:/DS_2003/DS-2003")
+stud_alc <- read.csv("D:/DS_2003/DS-2003/student-mat.csv")
 ```
 
 ## **Question:** Does the level of weekend alcohol consumption in students relate to their final grades?
@@ -55,6 +55,12 @@ stud_alc$Dalc <- as.factor(stud_alc$Dalc)
 
 ggplot(stud_alc, aes(x = Walc, fill = sex)) + geom_bar(position = 'dodge') + theme_classic() + labs(title = "Distribution of Weekend Alcohol Consumption by Sex") + xlab("Weekend Alcohol Consumption") + ylab("Number of Students")
 ```
+
+### **Findings:**
+
+As seen from the graph above, the amount of people in either sex tails off as the amount of alcohol consumption increases. Though, as we can also see from the grpah, the number of females who drink more tails off much more than the amount of males who drink more. While our hypothesis was correct in the sense that both sexes tail off as alcohol consumption increases, we were incorrect in predicting by how much: more males still consume more alcohol than females even at much higher alcohol consumptions levels. 
+
+All in all, while we do see a dipping trend in the number of people who consume levels of alcohol as the level of consumption increases, the rate at which the number of men falls falls much more slowly than that of women. 
 
 
 
