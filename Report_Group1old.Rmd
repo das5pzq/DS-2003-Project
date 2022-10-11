@@ -1,40 +1,29 @@
 ---
-title: "Midterm DS 2003"
-author: "Declan Young, Devin Seay, Saif Karim"
-date: "10/11/2022"
-output: 
-  html_document:
-    theme: lumen
-    code_folding: show
+title: "DS2003Midterm"
+output: html_document
+date: "2022-10-03"
 ---
-
 ### **Our chosen dataset examines over 200 students enrolled in a math course at a University in Portugal . Within our dataset is  a number of social, gender, and class variables with information that provide insight into the lives of these students. By examining this dataset we can explore the relationship between factors such as alcohol consumption, gender, age, romantic relationships, activites, absences, and even what your environment/family is like in order to gauge how each of these environmental factors can affect performance in school. The key variables within our dataset are- the number of past class failures (failure), the student’s age (age), going out with friends (goout-on a scale of 1-5), in a romantic relationship (romantic),  weekly study time (study time), internet access at home (internet), student’s sex (sex), and whether or not they wanted to pursue higher education (higher). While there were 33 variables examined in the study including those calculating the student’s grades throughout the semester, these eight variables were found to have the highest correlation to how well a student performed and are therefore our key variables.**
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r, warning=FALSE, include=FALSE}
-# import packages
+library(dplyr)
+library(ggplot2)
 library(tidyverse)
 ```
 
-```{r, include=FALSE}
-# Read in income data
-setwd("D:/DS_2003/DS-2003")
+```{r}
 stud_alc <- read.csv("D:/DS_2003/DS-2003/student-mat.csv")
 ```
 
-## **Question:** Does the level of weekend alcohol consumption in students relate to their final grades?
+## **Question 1:** Does the level of weekend alcohol consumption in students relate to their final grades?
 
 ### **Hypothesis:** We believe that grades will decrease in students with higher weekend alcohol consumption levels.
 
 ```{r}
-
 #Wrangling data to make a tibble with the average grade percent for each level of alcohol consumption
 stud_alc_summarized <- stud_alc %>% mutate(G1 = (G1/20)*100) %>% group_by(as.factor(Walc)) %>% summarise(mean = round(mean(G1), 2), sd = sd(G1)) %>% rename('Weekend_Alcohol_Consumption' = 'as.factor(Walc)') %>% mutate(pct = '%') %>% unite(bar_label, c(mean, pct), sep = '', remove = FALSE)
 stud_alc_summarized
-
 #Creating the visualization using ggplot
 ggplot(stud_alc_summarized, aes(x = Weekend_Alcohol_Consumption, y = mean, fill = 'pink')) + geom_bar(stat = 'identity', position = 'dodge') + theme_classic() + labs(title = "Average First Period Grade by Weekend Alcohol Consumption", caption = "Error bars represent +/-1 standard deviation from the average") + xlab("Weekend Alcohol Consumption") + ylab("First Period Grade (%)") +
   geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=.2,
@@ -48,24 +37,38 @@ Additionally, although a five percent difference would be significant for many s
 
 Altogether, although we see a trend in the relationship between alcohol consumption and first period grade, it appears to follow more of a piece wise pattern than a linear or exponential pattern, and we cannot make any definitive conclusions.
 
-## Question 2: What is the distribution of students' weekend alcohol consumption by sex?
+### **Question 2: How does each variable correlate to the students’ final grade?**
 
-### **Hypothesis:** We believe that the number of students will taper off as the alcohol consumption level increases at similar proportions for both males and females.
+### **Hypothesis: Alcohol consumption is the most strongly tied to one’s final grade**
+
 ```{r}
-stud_alc$Walc <- as.factor(stud_alc$Walc)
-stud_alc$Dalc <- as.factor(stud_alc$Dalc)
+library(corrr)
+library(corrplot)
+Grades <- read_csv("D:/DS_2003/DS-2003/student-mat.csv")
+Grades[,c(1,2,4,5,6,9,10,11,12,16,17,18,19,20,21,22,23)] <- lapply(Grades[,c(1,2,4,5,6,9,10,11,12,16,17,18,19,20,21,22,23)], as.factor)
 
-ggplot(stud_alc, aes(x = Walc, fill = sex)) + geom_bar(position = 'dodge') + theme_classic() + labs(title = "Distribution of Weekend Alcohol Consumption by Sex") + xlab("Weekend Alcohol Consumption") + ylab("Number of Students")
+drops <- c("reason","Fjob","Mjob","Fedu","Medu","address","reason","guardian","school","paid")
+Grades = Grades[ , !(names(Grades) %in% drops)]
+Grades[] <- lapply(Grades, as.integer)
+colnames(Grades) <- c("Sex","Age","Family Size","Parent Status","Travel Time","Study Time","Past Failed Classes","School Education Support","Family Education Support","Extra-Curs","Attended Nursery","Higher Ed","Internet","Romantic","Family Relationship","Free Time","Going Out","Workday Alc Consumption","Weekend Alc Consumption","Health","Absences","G1","G2","G3")
+Grades_cor <- cor(Grades[1:21], Grades[22:24])
+Grades_cor <- Grades_cor[order(Grades_cor[1:21]),]
+Grades_cor <- as.data.frame(Grades_cor)
+Grades_cor["rownames"] <- rownames(Grades_cor)
+Grades_cor <- Grades_cor %>% 
+  mutate(interval  = case_when(G3 < 0 ~ 'below', G3 >= 0 ~ 'above'))
+Grades_cor <- Grades_cor %>%
+  arrange(desc(G3))
+Grades_cor %>%
+  ggplot(aes(x = reorder(rownames,G3), y = G3, fill = interval)) + 
+  geom_bar(stat = "identity") +
+  ylab("r Correlation value with final grade") +
+  xlab("Variable") +
+  theme(text = element_text(size=12), axis.text.x = element_text(angle=50,hjust=1, size = 10),legend.position="none",axis.line = element_line(colour = "black"),panel.background = element_rect(fill = "white")) + geom_text(aes(x = rownames, y = G3, label = round(G3,3)),
+    position = position_dodge(width = 1),
+    vjust = -0.3, size = 2.5) +
+  ggtitle("Correlation: R vs. Variables")
+  #png(filename = "Bars.png")
 ```
 
-### **Findings:**
-
-As seen from the graph above, the amount of people in either sex tails off as the amount of alcohol consumption increases. Though, as we can also see from the grpah, the number of females who drink more tails off much more than the amount of males who drink more. While our hypothesis was correct in the sense that both sexes tail off as alcohol consumption increases, we were incorrect in predicting by how much: more males still consume more alcohol than females even at much higher alcohol consumptions levels. 
-
-All in all, while we do see a dipping trend in the number of people who consume levels of alcohol as the level of consumption increases, the rate at which the number of men falls falls much more slowly than that of women. 
-
-
-
-
-
-
+### **Conclusion:** Alcohol consumption is not that strongly correlated with one's final grade; number of past failed classes, age, and wanting to go onto higher education have the largest correlation values. As seen in the graph, # of past failed classes is most negatively correlated and age and the desire for higher education are the two most positively correlated values. Although we can't make definite conclusions about the data from this trend alone, it does point us into a direction for further investigation. But as we can see from the graph, the amount of alcohol consumption has little correlated with one's finale grade, the opposite of our hypothesis based on our previous findings in question 1.
