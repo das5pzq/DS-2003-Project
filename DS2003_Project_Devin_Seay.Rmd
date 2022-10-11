@@ -41,6 +41,10 @@ Grades_cor %>%
   geom_bar(stat = "identity") +
   ylab("r Correlation value with final grade") +
   xlab("Variable") +
-  theme(text = element_text(size=9), axis.text.x = element_text(angle=50,hjust=1),legend.position="none",axis.line = element_line(colour = "black"),panel.background = element_rect(fill = "white"))
-
+  theme(text = element_text(size=12), axis.text.x = element_text(angle=50,hjust=1, size = 10),legend.position="none",axis.line = element_line(colour = "black"),panel.background = element_rect(fill = "white")) + geom_text(aes(x = rownames, y = G3, label = round(G3,3)),
+    position = position_dodge(width = 1),
+    vjust = -0.3, size = 2.5) +
+  ggtitle("Correlation: R vs. Variables") + 
+  png(filename = "Bars.png")
+dev.off()
 ```
